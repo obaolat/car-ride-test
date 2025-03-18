@@ -6,6 +6,7 @@ from models import db, User, Driver, Admin, Rating
 from matcher import RideMatcher  
 from dotenv import load_dotenv
 from functools import wraps
+from navigation import calculate_optimal_route
 import os
 
 load_dotenv()
@@ -203,3 +204,14 @@ def get_driver_ratings(driver_id):
         "score": rating.score,
         "timestamp": rating.timestamp.strftime('%Y-%m-%d %H:%M:%S')
     } for rating in ratings]), 200
+
+
+@routes.route('/api/route', methods=['POST'])
+def get_route():
+    data = request.get_json()
+    driver_location = tuple(data['driver_location'])  # [longitude, latitude]
+    passenger_pickup = tuple(data['passenger_pickup'])  # [longitude, latitude]
+    passenger_dropoff = tuple(data['passenger_dropoff'])  # [longitude, latitude]
+
+    route_info = calculate_optimal_route(driver_location, passenger_pickup, passenger_dropoff)
+    return jsonify(route_info)
